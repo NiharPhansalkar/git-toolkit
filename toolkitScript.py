@@ -21,29 +21,19 @@ while True:
 
 def diffCommits(repoObject):
     totalBranches = int(input("How many branches will you like to add? "))
-    branches = []
+    branches = [input(f"Enter branch{i+1} name: ") for i in range(totalBranches)]
     commitTable = {}
-    for i in range(totalBranches):
-        branchName = input(f"Enter branch{i+1} name: ")
-        branches.append(branchName)
 
     for individualBranch in branches:
-        branch = repo.commit(individualBranch);
-        commitTable[individualBranch] = list(repo.iter_commits(branch))
+        branch = repoObject.commit(individualBranch);
+        commitTable[individualBranch] = list(repoObject.iter_commits(branch))
 
-    uniqueValues = set()
 
-    for lst in commitTable.values():
-        uniqueValues.update(lst)
+    uniqueValues = {commit for lst in commitTable.values() for commit in lst}
 
-    columns = {name: [None] * len(uniqueValues) for name in commitTable.keys()}
-
-    df = pd.DataFrame(columns)
-
-    for i, value in enumerate(uniqueValues):
-        for name, lst in commitTable.items():
-            if value in lst:
-                df.at[i, name] = value
+    columns = {name: [None] * len(uniqueValues) for name in commitTable}
+    data = {name: [value if value in lst else None for value in uniqueValues] for name, lst in commitTable.items()}
+    df = pd.DataFrame(data)
 
     df.to_csv('output.csv', index=False)
 
